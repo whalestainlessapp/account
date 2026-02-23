@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whale Stainless - ใบรับรองแทนใบเสร็จ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+        .whale-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        .loader { border-top-color: #3b82f6; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="whale-gradient p-6 text-white text-center">
+            <h1 class="text-2xl font-bold">ใบรับรองแทนใบเสร็จ</h1>
+            <p class="text-sm opacity-90">Whale Stainless Steel Co., Ltd.</p>
+        </div>
+
+        <!-- User Profile (Hidden) -->
+        <div id="profile" class="flex items-center gap-3 p-4 bg-blue-50 border-b border-blue-100 hidden">
+            <img id="pictureUrl" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="" alt="Profile">
+            <div class="text-sm">
+                <p class="font-medium text-blue-900" id="displayName"></p>
+                <p class="text-xs text-blue-600" id="userIdDisplay"></p>
+            </div>
+        </div>
+
+        <!-- Error Message Area -->
+        <div id="errorAlert" class="hidden m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            <div class="flex items-center gap-2 mb-1">
+                <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                <strong class="font-bold">ขั้นตอนการตั้งค่าที่ยังไม่เสร็จ:</strong>
+            </div>
+            <span id="errorMessage"></span>
+        </div>
+
+        <!-- Form -->
+        <form id="receiptForm" class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">วันที่เบิก</label>
+                <input type="date" id="date" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">ชื่อร้านค้า / ผู้รับเงิน</label>
+                <input type="text" id="shopName" placeholder="ระบุชื่อร้านค้า" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ราคารวม (บาท)</label>
+                    <input type="number" id="amount" step="0.01" placeholder="0.00" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ประเภทการเบิก</label>
+                    <select id="state" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5">
+                        <option value="หน้าร้าน">หน้าร้าน</option>
+                        <option value="พนักงานทั่วไป">พนักงานทั่วไป</option>
+                        <option value="สำรองจ่าย">สำรองจ่าย</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">รายละเอียดเพิ่มเติม</label>
+                <textarea id="note" rows="2" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5" placeholder="ระบุรายการสินค้า..."></textarea>
+            </div>
+
+            <!-- File Upload -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">แนบรูปภาพบิล / หลักฐาน (หลายใบได้)</label>
+                <div class="flex items-center justify-center w-full">
+                    <label class="flex flex-col w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex flex-col items-center justify-center pt-7">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <p class="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">เลือกไฟล์ภาพ</p>
+                        </div>
+                        <input type="file" id="files" accept="image/*" multiple class="opacity-0" onchange="updateFileList(this)" />
+                    </label>
+                </div>
+                <div id="fileList" class="mt-2 text-xs text-gray-500 italic px-2">ยังไม่ได้เลือกไฟล์</div>
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full whale-gradient text-white font-bold py-3 rounded-xl shadow-lg hover:opacity-90 transition-all transform active:scale-95">
+                ส่งข้อมูลบันทึกบิล
+            </button>
+        </form>
+
+        <!-- Loading Overlay -->
+        <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white p-8 rounded-2xl flex flex-col items-center">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+                <p class="text-blue-900 font-medium">กำลังอัปโหลดข้อมูล...</p>
+                <p class="text-xs text-gray-500">กรุณาอย่าปิดหน้านี้</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ------------------------------------------------------------------
+         * ส่วนที่ต้องตั้งค่า (CONFIGURATION)
+         * ------------------------------------------------------------------
+         * 1. LIFF_ID: นำมาจากหน้า LINE Developers > Your Provider > Your Channel > LIFF
+         * 2. N8N_WEBHOOK_URL: นำมาจากโหนด Webhook ใน n8n (ใช้ Production URL)
+         * ------------------------------------------------------------------
+         */
+        const LIFF_ID = "YOUR_LIFF_ID"; // <--- เปลี่ยนเป็น LIFF ID ของคุณ
+        const N8N_WEBHOOK_URL = "YOUR_N8N_WEBHOOK_URL"; // <--- เปลี่ยนเป็น n8n Webhook URL ของคุณ
+        
+        let userId = "";
+        let displayName = "";
+
+        // ตั้งค่าวันที่ปัจจุบันเป็นค่าเริ่มต้น
+        document.getElementById('date').valueAsDate = new Date();
+
+        // ฟังก์ชันสำหรับแสดงข้อความแจ้งเตือนข้อผิดพลาดบนหน้าจอ
+        function showError(msg) {
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.innerHTML = msg;
+            errorAlert.classList.remove('hidden');
+        }
+
+        async function main() {
+            try {
+                // ตรวจสอบว่าผู้ใช้เปลี่ยนค่า LIFF_ID หรือยัง
+                if (LIFF_ID === "YOUR_LIFF_ID") {
+                    throw new Error("คุณยังไม่ได้ระบุ <b>LIFF ID</b> ในส่วน Configuration ของโค้ด <br><br>กรุณานำค่าจาก LINE Developers Console มาใส่ที่บรรทัด <code class='bg-red-200 px-1'>const LIFF_ID = '...';</code>");
+                }
+
+                // เริ่มต้นการทำงานของ LIFF SDK
+                await liff.init({ liffId: LIFF_ID });
+                
+                // ตรวจสอบการเข้าสู่ระบบ
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    userId = profile.userId;
+                    displayName = profile.displayName;
+                    
+                    // แสดงโปรไฟล์ผู้ใช้
+                    document.getElementById('profile').classList.remove('hidden');
+                    document.getElementById('pictureUrl').src = profile.pictureUrl;
+                    document.getElementById('displayName').innerText = displayName;
+                    document.getElementById('userIdDisplay').innerText = userId;
+                }
+            } catch (err) {
+                console.error("LIFF Init failed", err);
+                let msg = err.message;
+                if (msg.includes("channel not found")) {
+                    msg = "ไม่พบ Channel (LIFF ID ไม่ถูกต้อง หรือ URL ที่ใช้งานยังไม่ได้ถูกตั้งค่าเป็น Endpoint URL ในระบบของ LINE)";
+                }
+                showError(msg);
+            }
+        }
+
+        // อัปเดตรายชื่อไฟล์ที่เลือก
+        function updateFileList(input) {
+            const list = document.getElementById('fileList');
+            if (input.files.length > 0) {
+                list.innerText = `เลือกแล้ว ${input.files.length} ไฟล์`;
+            } else {
+                list.innerText = "ยังไม่ได้เลือกไฟล์";
+            }
+        }
+
+        // แปลงไฟล์เป็น Base64
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        // จัดการการส่งฟอร์ม
+        document.getElementById('receiptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // ตรวจสอบ Webhook URL เบื้องต้น
+            if (N8N_WEBHOOK_URL === "YOUR_N8N_WEBHOOK_URL") {
+                alert("กรุณาตั้งค่า N8N_WEBHOOK_URL ในโค้ดก่อนเริ่มใช้งานครับ");
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            
+            loading.classList.remove('hidden');
+            submitBtn.disabled = true;
+
+            try {
+                const fileInput = document.getElementById('files');
+                const filePromises = Array.from(fileInput.files).map(async (file) => {
+                    return {
+                        name: file.name,
+                        data: await toBase64(file),
+                        mimeType: file.type
+                    };
+                });
+
+                const filesData = await Promise.all(filePromises);
+
+                // เตรียมข้อมูลส่งไปยัง n8n
+                const payload = {
+                    userId: userId,
+                    userName: displayName,
+                    date: document.getElementById('date').value,
+                    shopName: document.getElementById('shopName').value,
+                    amount: parseFloat(document.getElementById('amount').value),
+                    state: document.getElementById('state').value,
+                    note: document.getElementById('note').value,
+                    files: filesData,
+                    timestamp: new Date().toISOString()
+                };
+
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert('บันทึกข้อมูลสำเร็จ! ระบบกำลังดำเนินการออก PDF และแจ้งเตือนผ่าน LINE');
+                    liff.closeWindow();
+                } else {
+                    throw new Error('ส่งข้อมูลไม่สำเร็จ กรุณาตรวจสอบว่าเปิดการทำงานของ Webhook ใน n8n แล้วหรือยัง');
+                }
+            } catch (err) {
+                alert('เกิดข้อผิดพลาด: ' + err.message);
+            } finally {
+                loading.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // รันฟังก์ชันหลัก
+        main();
+    </script>
+</body>
+</html>
