@@ -106,9 +106,10 @@
 
         async function main() {
             try {
-                // เริ่มต้น LIFF โดยไม่มีการเช็คเงื่อนไขซ้อนทับ
+                // เริ่มต้นการทำงานของ LIFF SDK
                 await liff.init({ liffId: LIFF_ID });
                 
+                // ตรวจสอบการเข้าสู่ระบบ
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 } else {
@@ -163,6 +164,7 @@
 
                 const filesData = await Promise.all(filePromises);
 
+                // เตรียมข้อมูลส่งไปยัง n8n
                 const payload = {
                     userId: userId,
                     userName: displayName,
@@ -185,7 +187,7 @@
                     alert('บันทึกข้อมูลสำเร็จ!');
                     liff.closeWindow();
                 } else {
-                    throw new Error('ส่งข้อมูลไม่สำเร็จ');
+                    throw new Error('ส่งข้อมูลไม่สำเร็จ กรุณาตรวจสอบสถานะ Webhook ใน n8n');
                 }
             } catch (err) {
                 alert('เกิดข้อผิดพลาด: ' + err.message);
