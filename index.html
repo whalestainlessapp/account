@@ -22,22 +22,13 @@
             <p class="text-sm opacity-90">Whale Stainless Steel Co., Ltd.</p>
         </div>
 
-        <!-- User Profile (Hidden) -->
+        <!-- User Profile -->
         <div id="profile" class="flex items-center gap-3 p-4 bg-blue-50 border-b border-blue-100 hidden">
             <img id="pictureUrl" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="" alt="Profile">
             <div class="text-sm">
                 <p class="font-medium text-blue-900" id="displayName"></p>
                 <p class="text-xs text-blue-600" id="userIdDisplay"></p>
             </div>
-        </div>
-
-        <!-- Error Message Area -->
-        <div id="errorAlert" class="hidden m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-            <div class="flex items-center gap-2 mb-1">
-                <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                <strong class="font-bold">ขั้นตอนการตั้งค่าที่ยังไม่เสร็จ:</strong>
-            </div>
-            <span id="errorMessage"></span>
         </div>
 
         <!-- Form -->
@@ -79,7 +70,7 @@
                     <label class="flex flex-col w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                         <div class="flex flex-col items-center justify-center pt-7">
                             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <p class="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">เลือกไฟล์ภาพ</p>
+                            <p class="pt-1 text-sm tracking-wider text-gray-400">เลือกไฟล์ภาพ</p>
                         </div>
                         <input type="file" id="files" accept="image/*" multiple class="opacity-0" onchange="updateFileList(this)" />
                     </label>
@@ -103,42 +94,21 @@
     </div>
 
     <script>
-        /**
-         * ------------------------------------------------------------------
-         * ส่วนที่ต้องตั้งค่า (CONFIGURATION)
-         * ------------------------------------------------------------------
-         * 1. LIFF_ID: นำมาจากหน้า LINE Developers > Your Provider > Your Channel > LIFF
-         * 2. N8N_WEBHOOK_URL: นำมาจากโหนด Webhook ใน n8n (ใช้ Production URL)
-         * ------------------------------------------------------------------
-         */
-        const LIFF_ID = "2009202454-NOfwzZk6"; // <--- เปลี่ยนเป็น LIFF ID ของคุณ
-        const N8N_WEBHOOK_URL = "https://n8n.whalestainless.work/webhook-test/receipt"; // <--- เปลี่ยนเป็น n8n Webhook URL ของคุณ
+        // CONFIGURATION
+        const LIFF_ID = "2009202454-NOfwzZk6"; 
+        const N8N_WEBHOOK_URL = "https://n8n.whalestainless.work/webhook-test/receipt"; 
         
         let userId = "";
         let displayName = "";
 
-        // ตั้งค่าวันที่ปัจจุบันเป็นค่าเริ่มต้น
+        // Set default date
         document.getElementById('date').valueAsDate = new Date();
-
-        // ฟังก์ชันสำหรับแสดงข้อความแจ้งเตือนข้อผิดพลาดบนหน้าจอ
-        function showError(msg) {
-            const errorAlert = document.getElementById('errorAlert');
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.innerHTML = msg;
-            errorAlert.classList.remove('hidden');
-        }
 
         async function main() {
             try {
-                // ตรวจสอบว่าผู้ใช้เปลี่ยนค่า LIFF_ID หรือยัง
-                if (LIFF_ID === "2009202454-NOfwzZk6") {
-                    throw new Error("คุณยังไม่ได้ระบุ <b>LIFF ID</b> ในส่วน Configuration ของโค้ด <br><br>กรุณานำค่าจาก LINE Developers Console มาใส่ที่บรรทัด <code class='bg-red-200 px-1'>const LIFF_ID = '...';</code>");
-                }
-
-                // เริ่มต้นการทำงานของ LIFF SDK
+                // เริ่มต้น LIFF โดยไม่มีการเช็คเงื่อนไขซ้อนทับ
                 await liff.init({ liffId: LIFF_ID });
                 
-                // ตรวจสอบการเข้าสู่ระบบ
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 } else {
@@ -146,7 +116,6 @@
                     userId = profile.userId;
                     displayName = profile.displayName;
                     
-                    // แสดงโปรไฟล์ผู้ใช้
                     document.getElementById('profile').classList.remove('hidden');
                     document.getElementById('pictureUrl').src = profile.pictureUrl;
                     document.getElementById('displayName').innerText = displayName;
@@ -154,15 +123,9 @@
                 }
             } catch (err) {
                 console.error("LIFF Init failed", err);
-                let msg = err.message;
-                if (msg.includes("channel not found")) {
-                    msg = "ไม่พบ Channel (LIFF ID ไม่ถูกต้อง หรือ URL ที่ใช้งานยังไม่ได้ถูกตั้งค่าเป็น Endpoint URL ในระบบของ LINE)";
-                }
-                showError(msg);
             }
         }
 
-        // อัปเดตรายชื่อไฟล์ที่เลือก
         function updateFileList(input) {
             const list = document.getElementById('fileList');
             if (input.files.length > 0) {
@@ -172,7 +135,6 @@
             }
         }
 
-        // แปลงไฟล์เป็น Base64
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -180,15 +142,8 @@
             reader.onerror = error => reject(error);
         });
 
-        // จัดการการส่งฟอร์ม
         document.getElementById('receiptForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            // ตรวจสอบ Webhook URL เบื้องต้น
-            if (N8N_WEBHOOK_URL === "https://n8n.whalestainless.work/webhook-test/receipt") {
-                alert("กรุณาตั้งค่า N8N_WEBHOOK_URL ในโค้ดก่อนเริ่มใช้งานครับ");
-                return;
-            }
             
             const submitBtn = document.getElementById('submitBtn');
             const loading = document.getElementById('loading');
@@ -208,7 +163,6 @@
 
                 const filesData = await Promise.all(filePromises);
 
-                // เตรียมข้อมูลส่งไปยัง n8n
                 const payload = {
                     userId: userId,
                     userName: displayName,
@@ -228,10 +182,10 @@
                 });
 
                 if (response.ok) {
-                    alert('บันทึกข้อมูลสำเร็จ! ระบบกำลังดำเนินการออก PDF และแจ้งเตือนผ่าน LINE');
+                    alert('บันทึกข้อมูลสำเร็จ!');
                     liff.closeWindow();
                 } else {
-                    throw new Error('ส่งข้อมูลไม่สำเร็จ กรุณาตรวจสอบว่าเปิดการทำงานของ Webhook ใน n8n แล้วหรือยัง');
+                    throw new Error('ส่งข้อมูลไม่สำเร็จ');
                 }
             } catch (err) {
                 alert('เกิดข้อผิดพลาด: ' + err.message);
@@ -241,7 +195,6 @@
             }
         });
 
-        // รันฟังก์ชันหลัก
         main();
     </script>
 </body>
