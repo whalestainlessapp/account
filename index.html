@@ -111,8 +111,8 @@
          * 2. N8N_WEBHOOK_URL: นำมาจากโหนด Webhook ใน n8n (ใช้ Production URL)
          * ------------------------------------------------------------------
          */
-        const LIFF_ID = "YOUR_LIFF_ID"; // <--- เปลี่ยนเป็น LIFF ID ของคุณ
-        const N8N_WEBHOOK_URL = "YOUR_N8N_WEBHOOK_URL"; // <--- เปลี่ยนเป็น n8n Webhook URL ของคุณ
+        const LIFF_ID = "2009202454-NOfwzZk6"; // <--- เปลี่ยนเป็น LIFF ID ของคุณ
+        const N8N_WEBHOOK_URL = "https://n8n.whalestainless.work/webhook-test/receipt"; // <--- เปลี่ยนเป็น n8n Webhook URL ของคุณ
         
         let userId = "";
         let displayName = "";
@@ -131,7 +131,7 @@
         async function main() {
             try {
                 // ตรวจสอบว่าผู้ใช้เปลี่ยนค่า LIFF_ID หรือยัง
-                if (LIFF_ID === "YOUR_LIFF_ID") {
+                if (LIFF_ID === "2009202454-NOfwzZk6") {
                     throw new Error("คุณยังไม่ได้ระบุ <b>LIFF ID</b> ในส่วน Configuration ของโค้ด <br><br>กรุณานำค่าจาก LINE Developers Console มาใส่ที่บรรทัด <code class='bg-red-200 px-1'>const LIFF_ID = '...';</code>");
                 }
 
@@ -185,7 +185,7 @@
             e.preventDefault();
 
             // ตรวจสอบ Webhook URL เบื้องต้น
-            if (N8N_WEBHOOK_URL === "YOUR_N8N_WEBHOOK_URL") {
+            if (N8N_WEBHOOK_URL === "https://n8n.whalestainless.work/webhook-test/receipt") {
                 alert("กรุณาตั้งค่า N8N_WEBHOOK_URL ในโค้ดก่อนเริ่มใช้งานครับ");
                 return;
             }
