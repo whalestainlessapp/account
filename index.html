@@ -22,7 +22,7 @@
             <p class="text-sm opacity-90">Whale Stainless Steel Co., Ltd.</p>
         </div>
 
-        <!-- โปรไฟล์ผู้ใช้ LINE -->
+        <!-- โปรไฟล์ผู้ใช้ LINE (แสดงเพื่อยืนยันตัวตนผู้ส่ง) -->
         <div id="profile" class="flex items-center gap-3 p-4 bg-blue-50 border-b border-blue-100 hidden">
             <img id="pictureUrl" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="" alt="Profile">
             <div class="text-sm">
@@ -33,6 +33,16 @@
 
         <!-- ฟอร์มกรอกข้อมูล -->
         <form id="receiptForm" class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">ชื่อผู้เบิก</label>
+                <select id="requesterName" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5">
+                    <option value="" disabled selected>เลือกชื่อผู้เบิก</option>
+                    <option value="ธนนันต์">ธนนันต์</option>
+                    <option value="วาริณี">วาริณี</option>
+                    <option value="ธนันดา">ธนันดา</option>
+                </select>
+            </div>
+
             <div>
                 <label class="block text-sm font-medium text-gray-700">วันที่เบิก</label>
                 <input type="date" id="date" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5">
@@ -51,9 +61,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">ประเภทการเบิก</label>
                     <select id="state" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5">
-                        <option value="หน้าร้าน">หน้าร้าน</option>
-                        <option value="พนักงานทั่วไป">พนักงานทั่วไป</option>
                         <option value="สำรองจ่าย">สำรองจ่าย</option>
+                        <option value="ตั้งเบิก">ตั้งเบิก</option>
                     </select>
                 </div>
             </div>
@@ -72,7 +81,6 @@
                             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             <p class="pt-1 text-sm tracking-wider text-gray-400">คลิกเพื่อเลือกรูปภาพ หรือ PDF</p>
                         </div>
-                        <!-- ปรับปรุง accept ให้รองรับ PDF ในมือถือได้ดียิ่งขึ้น -->
                         <input type="file" id="files" accept=".pdf,application/pdf,image/*" multiple class="opacity-0" onchange="updateFileList(this)" />
                     </label>
                 </div>
@@ -98,8 +106,8 @@
         const LIFF_ID = "2009202454-NOfwzZk6"; 
         const N8N_WEBHOOK_URL = "https://n8n.whalestainless.work/webhook-test/receipt"; 
         
-        let userId = "";
-        let displayName = "";
+        let lineUserId = "";
+        let lineDisplayName = "";
 
         // ตั้งค่าวันที่ปัจจุบัน
         document.getElementById('date').valueAsDate = new Date();
@@ -111,12 +119,12 @@
                     liff.login();
                 } else {
                     const profile = await liff.getProfile();
-                    userId = profile.userId;
-                    displayName = profile.displayName;
+                    lineUserId = profile.userId;
+                    lineDisplayName = profile.displayName;
                     document.getElementById('profile').classList.remove('hidden');
                     document.getElementById('pictureUrl').src = profile.pictureUrl;
-                    document.getElementById('displayName').innerText = displayName;
-                    document.getElementById('userIdDisplay').innerText = userId;
+                    document.getElementById('displayName').innerText = lineDisplayName;
+                    document.getElementById('userIdDisplay').innerText = lineUserId;
                 }
             } catch (err) {
                 console.error("LIFF Error:", err);
@@ -128,7 +136,6 @@
             list.innerText = input.files.length > 0 ? `เลือกแล้ว ${input.files.length} ไฟล์` : "ยังไม่ได้เลือกไฟล์";
         }
 
-        // ฟังก์ชันแปลงไฟล์เป็น Base64
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -158,8 +165,9 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId, 
-                        userName: displayName,
+                        lineUserId: lineUserId, 
+                        lineDisplayName: lineDisplayName,
+                        userName: document.getElementById('requesterName').value, // ชื่อที่เลือกจาก Dropdown
                         date: document.getElementById('date').value,
                         shopName: document.getElementById('shopName').value,
                         amount: parseFloat(document.getElementById('amount').value),
